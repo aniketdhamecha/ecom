@@ -1,7 +1,8 @@
 # SHOP.CO - High-Fidelity React E-Commerce Console Suite
 
 SHOP.CO is a premium, fully responsive React e-commerce portal and administrative console suite. It faithfully implements the SHOP.CO design system alongside custom-engineered interactive metrics, product catalog managers, and security/firewall systems.
-
+---
+Live Url - https://shopco-ecom-plum.vercel.app/about
 ---
 
 ## 🚀 Core Features
