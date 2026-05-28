@@ -8,6 +8,9 @@ const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
+  // Active catalog state (defaults to high-fidelity static fallback catalog)
+  const [dbProducts, setDbProducts] = useState(products);
+
   // Active filter states
   const [selectedCategory, setSelectedCategory] = useState('');
   const [priceRange, setPriceRange] = useState([50, 200]);
@@ -19,6 +22,20 @@ const Shop = () => {
   
   // Mobile filter drawer visibility
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+
+  // 1. Fetch live product catalog from database on mount
+  useEffect(() => {
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((payload) => {
+        if (payload.success && payload.data) {
+          setDbProducts(payload.data);
+        }
+      })
+      .catch((err) => {
+        console.log('Using static products catalog backup:', err);
+      });
+  }, []);
 
   // Sync state with query parameters
   useEffect(() => {
@@ -64,9 +81,9 @@ const Shop = () => {
 
   const stylesList = ['Casual', 'Formal', 'Party', 'Gym'];
 
-  // 1. FILTER LOGIC
+  // 2. FILTER LOGIC
   const filteredProducts = useMemo(() => {
-    let result = [...products];
+    let result = [...dbProducts];
 
     // Search query from navbar
     const searchQuery = searchParams.get('search');
@@ -112,7 +129,7 @@ const Shop = () => {
       (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
     );
 
-    // 2. SORT LOGIC
+    // 3. SORT LOGIC
     if (sortBy === 'Price: Low to High') {
       result.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'Price: High to Low') {
@@ -125,7 +142,7 @@ const Shop = () => {
     }
 
     return result;
-  }, [selectedCategory, selectedStyle, selectedColor, selectedSize, priceRange, sortBy, searchParams]);
+  }, [dbProducts, selectedCategory, selectedStyle, selectedColor, selectedSize, priceRange, sortBy, searchParams]);
 
   // PAGINATION math
   const itemsPerPage = 9;
