@@ -15,9 +15,11 @@ import {
   LockKeyhole,
   FileDown
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  const navigate = useNavigate();
+
   // Scroll reveal refs
   const heroRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -32,8 +34,29 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('details');
 
   // Form input states
-  const [name, setName] = useState('Alex M. Sterling');
-  const [email, setEmail] = useState('alex.sterling@example.com');
+  const [name, setName] = useState(() => {
+    const saved = localStorage.getItem('ecom_user');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.user_metadata?.display_name || parsed.email || 'Alex M. Sterling';
+      } catch (e) {
+        return 'Alex M. Sterling';
+      }
+    }
+    return 'Alex M. Sterling';
+  });
+  const [email, setEmail] = useState(() => {
+    const saved = localStorage.getItem('ecom_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved).email || 'alex.sterling@example.com';
+      } catch (e) {
+        return 'alex.sterling@example.com';
+      }
+    }
+    return 'alex.sterling@example.com';
+  });
   const [phone, setPhone] = useState('+1 (212) 555-0144');
   const [gender, setGender] = useState('Prefer Not to Say');
   const [sizePreference, setSizePreference] = useState('Large');
@@ -255,6 +278,26 @@ const Profile = () => {
                 >
                   <Award size={16} />
                   <span>Loyalty & Rewards</span>
+                  <ChevronRightDummy />
+                </button>
+              </li>
+              <li style={{ marginTop: '20px', borderTop: '1px solid #E5E7EB', paddingTop: '20px' }}>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('ecom_user');
+                    localStorage.removeItem('ecom_session');
+                    setToastMsg('Successfully signed out! Redirecting...');
+                    setShowToast(true);
+                    setTimeout(() => {
+                      setShowToast(false);
+                      navigate('/login');
+                    }, 2000);
+                  }}
+                  className="profile-menu-btn"
+                  style={{ color: '#EF4444' }}
+                >
+                  <Lock size={16} />
+                  <span>Sign Out</span>
                   <ChevronRightDummy />
                 </button>
               </li>

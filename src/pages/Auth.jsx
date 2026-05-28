@@ -20,6 +20,8 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Scroll automatically to top on load
@@ -43,17 +45,51 @@ const Auth = () => {
     };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isRegister) {
-      setSuccessMsg(`Welcome to SHOP.CO, ${name}! Your account has been created successfully.`);
-    } else {
-      setSuccessMsg(`Welcome back! You have successfully signed in.`);
+    setIsLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const url = isRegister ? '/api/auth/register' : '/api/auth/login';
+    const payload = isRegister 
+      ? { email, password, name } 
+      : { email, password };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'An error occurred during authentication.');
+      }
+
+      setSuccessMsg(data.message || (isRegister ? 'Account created successfully!' : 'Welcome back!'));
+
+      // If we got a session, store it in localStorage
+      if (data.session) {
+        localStorage.setItem('ecom_session', JSON.stringify(data.session));
+      }
+      if (data.user) {
+        localStorage.setItem('ecom_user', JSON.stringify(data.user));
+      }
+
+      setTimeout(() => {
+        setSuccessMsg('');
+        // Redirect directly to profile if we got a session immediately, otherwise to login
+        navigate(data.session ? '/profile' : (isRegister ? '/login' : '/profile'));
+      }, 2500);
+
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    setTimeout(() => {
-      setSuccessMsg('');
-      navigate('/');
-    }, 2500);
   };
 
   return (
@@ -98,6 +134,22 @@ const Auth = () => {
             </div>
           )}
 
+          {errorMsg && (
+            <div className="auth-error-toast" style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#B91C1C',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              fontSize: '14px',
+              textAlign: 'center',
+              fontWeight: '500'
+            }}>
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="auth-inputs-form">
             {isRegister && (
               <div className="auth-input-group">
@@ -111,6 +163,7 @@ const Auth = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="auth-input-field"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -127,6 +180,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="auth-input-field"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -142,12 +196,14 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="auth-input-field"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="auth-password-toggle"
                   aria-label="Toggle password visibility"
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -157,7 +213,7 @@ const Auth = () => {
             {!isRegister && (
               <div className="auth-options-row">
                 <div className="auth-remember-me">
-                  <input type="checkbox" id="remember" />
+                  <input type="checkbox" id="remember" disabled={isLoading} />
                   <label htmlFor="remember">Remember me</label>
                 </div>
                 <Link to="/forgot-password" className="auth-forgot-link">
@@ -166,8 +222,8 @@ const Auth = () => {
               </div>
             )}
 
-            <button type="submit" className="auth-submit-btn">
-              <span>{isRegister ? 'Register Now' : 'Sign In'}</span>
+            <button type="submit" className="auth-submit-btn" disabled={isLoading} style={{ opacity: isLoading ? 0.7 : 1 }}>
+              <span>{isLoading ? 'Processing...' : (isRegister ? 'Register Now' : 'Sign In')}</span>
               <ArrowRight size={18} />
             </button>
           </form>

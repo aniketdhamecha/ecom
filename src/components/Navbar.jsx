@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, Search, ShoppingCart, User, ChevronDown, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -9,6 +9,22 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPromoRibbon, setShowPromoRibbon] = useState(true);
+  const [apiConnected, setApiConnected] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/hello')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setApiConnected(true);
+        } else {
+          setApiConnected(false);
+        }
+      })
+      .catch(() => {
+        setApiConnected(false);
+      });
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -47,10 +63,27 @@ const Navbar = () => {
           <Menu size={24} />
         </button>
 
-        {/* Brand Logo */}
-        <Link to="/" className="nav-brand">
-          SHOP.CO
-        </Link>
+        {/* Brand Logo with Serverless Backend indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Link to="/" className="nav-brand">
+            SHOP.CO
+          </Link>
+          {apiConnected && (
+            <span 
+              title="Vercel Serverless API Online"
+              style={{
+                display: 'inline-block',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#10B981',
+                boxShadow: '0 0 10px #10B981, 0 0 4px #10B981',
+                cursor: 'help',
+                animation: 'pulse 2s infinite'
+              }}
+            />
+          )}
+        </div>
 
         {/* Desktop Nav Links */}
         <ul className="nav-links">
