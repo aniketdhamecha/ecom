@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /shop
+Allow: /product/*
 Disallow: /admin
 Disallow: /admin-dashboard
 Disallow: /cart
