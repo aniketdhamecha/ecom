@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-dashboard
+Disallow: /cart
+Disallow: /login
+Disallow: /register
+Disallow: /orders
+Disallow: /order-history
+Disallow: /profile
+Disallow: /account
+Disallow: /wishlist
+Disallow: /compare
+Disallow: /maintenance
+Disallow: /access-denied
+Disallow: /session-expired
+Disallow: /api/
+
+Host: https://shopco-ecom-plum.vercel.app
+Sitemap: https://shopco-ecom-plum.vercel.app/sitemap.xml
